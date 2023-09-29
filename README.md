@@ -22,7 +22,7 @@ The installer [partitions the disk](https://github.com/tfc/nixos-auto-installer/
 
 - 512 MiB fat32 boot partition
 - 8 GiB swap partition
-- rest size ext4  nixos partition
+- rest size btrfs  nixos partition
 
 The `root` user is the only user on the system. It has no password for physical login.
 The only way to login is via SSH with pubkey authentication (see Customization in this README).
