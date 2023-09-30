@@ -50,7 +50,7 @@
 
 
       wait-for [ -b /dev/disk/by-partlabel/NIXOS ]
-      mkfs.btrfs -L nixos /dev/disk/by-partlabel/NIXOS
+      mkfs.btrfs -f -L nixos /dev/disk/by-partlabel/NIXOS
 
       sync
       wait-for [ -b /dev/disk/by-label/swap ]
