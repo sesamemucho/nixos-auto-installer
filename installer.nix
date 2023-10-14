@@ -37,6 +37,7 @@
 
         name=BOOT, size=512MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
         name=SWAP, size=8GiB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
+        name=LTEST, size=20GiB
         name=NIXOS
       END
 
@@ -48,6 +49,8 @@
       wait-for [ -b /dev/disk/by-partlabel/SWAP ]
       wait-for mkswap -L swap /dev/disk/by-partlabel/SWAP
 
+      wait-for [ -b /dev/disk/by-partlabel/LTEST ]
+      mkfs.btrfs -f -L ltest /dev/disk/by-partlabel/LTEST
 
       wait-for [ -b /dev/disk/by-partlabel/NIXOS ]
       mkfs.btrfs -f -L nixos /dev/disk/by-partlabel/NIXOS
