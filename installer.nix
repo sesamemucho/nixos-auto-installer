@@ -49,19 +49,13 @@
       wait-for [ -b /dev/disk/by-partlabel/SWAP ]
       wait-for mkswap -L swap /dev/disk/by-partlabel/SWAP
 
-      # wait-for [ -b /dev/disk/by-partlabel/LTEST ]
-      # mkfs.btrfs -f -L ltest /dev/disk/by-partlabel/LTEST
-
       wait-for [ -b /dev/disk/by-partlabel/NIXOS ]
-      mkfs.btrfs -f -L nixos /dev/disk/by-partlabel/NIXOS
-
-      wait-for [ -b /dev/disk/by-partlabel/LTEST ]
       # format the disk with the luks structure
-      echo -n p | cryptsetup luksFormat --type luks2 --key-file - /dev/disk/by-partlabel/LTEST
+      echo -n p | cryptsetup luksFormat --type luks2 --key-file - /dev/disk/by-partlabel/NIXOS
       # open the encrypted partition and map it to /dev/mapper/cryptroot
-      echo -n p | cryptsetup open --type luks2 --key-file - /dev/disk/by-partlabel/LTEST cryptroot
+      echo -n p | cryptsetup open --type luks2 --key-file - /dev/disk/by-partlabel/NIXOS cryptroot
       # format
-      mkfs.btrfs -f -L ltest /dev/mapper/cryptroot
+      mkfs.btrfs -f -L nixos /dev/mapper/cryptroot
 
       sync
       wait-for [ -b /dev/disk/by-label/swap ]
@@ -72,11 +66,6 @@
 
       mkdir /mnt/boot
       wait-for mount /dev/disk/by-label/boot /mnt/boot
-
-      mkdir /mnt/ltest
-      wait-for [ -b /dev/mapper/cryptroot ]
-      wait-for mount /dev/mapper/cryptroot /mnt/ltest
-
 
       install -D ${./configuration.nix} /mnt/etc/nixos/configuration.nix
       install -D ${./hardware-configuration.nix} /mnt/etc/nixos/hardware-configuration.nix

@@ -37,8 +37,11 @@
     fsType = "vfat";
   };
 
+  boot.initrd.luks.devices."cryptroot".device = "/dev/disk/by-partlabel/NIXOS";
+
   fileSystems."/" = {
-    device = "/dev/disk/by-label/nixos";
+    # device = "/dev/disk/by-label/nixos";
+    device = "/dev/mapper/cryptroot";
     fsType = "btrfs";
   };
 
