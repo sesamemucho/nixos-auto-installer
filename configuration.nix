@@ -40,10 +40,12 @@
     publish = { enable = true; domain = true; addresses = true; };
   };
   environment.systemPackages = with pkgs; [
+    cryptsetup
+    emacs
     git
+    tmux
     vim
     wget
-    tmux
   ];
 
   security.sudo.wheelNeedsPassword = false;
@@ -59,9 +61,9 @@
     isNormalUser = true;
     description = "Bob Forgey";
     extraGroups = [ "wheel" ];
+    password = "password";
     packages = with pkgs; [
       firefox
-      emacs
     #  thunderbird
     ];
   };
