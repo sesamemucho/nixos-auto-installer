@@ -56,13 +56,42 @@
       echo -n p | cryptsetup open --type luks2 --key-file - /dev/disk/by-partlabel/NIXOS cryptroot
       # format
       mkfs.btrfs -f -L nixos /dev/mapper/cryptroot
+      wait-for [ -b /dev/disk/by-label/nixos ]
+      mount -t btrfs /dev/mapper/cryptroot /mnt
+      #mount /dev/disk/by-label/nixos /mnt
+
+      # We first create the subvolumes outlined above:
+      btrfs subvolume create /mnt/root
+      btrfs subvolume create /mnt/home
+      btrfs subvolume create /mnt/nix
+      btrfs subvolume create /mnt/persist
+      btrfs subvolume create /mnt/log
+
+      # We then take an empty *readonly* snapshot of the root subvolume,
+      # which we'll eventually rollback to on every boot.
+      btrfs subvolume snapshot -r /mnt/root /mnt/root-blank
+
+      umount /mnt
 
       sync
       wait-for [ -b /dev/disk/by-label/swap ]
       swapon /dev/disk/by-label/swap
 
-      wait-for [ -b /dev/disk/by-label/nixos ]
-      mount /dev/disk/by-label/nixos /mnt
+      mount -o subvol=root,compress=zstd,noatime /dev/mapper/cryptroot /mnt
+
+      # Once we’ve created the subvolumes, we mount them with the options that we want. Here, we’re using Zstandard compression along with the noatime option.
+
+      mkdir /mnt/home
+      mount -o subvol=home,compress=zstd,noatime /dev/mapper/cryptroot /mnt/home
+
+      mkdir /mnt/nix
+      mount -o subvol=nix,compress=zstd,noatime /dev/mapper/cryptroot /mnt/nix
+
+      mkdir /mnt/persist
+      mount -o subvol=persist,compress=zstd,noatime /dev/mapper/cryptroot /mnt/persist
+
+      mkdir -p /mnt/var/log
+      mount -o subvol=log,compress=zstd,noatime /dev/mapper/cryptroot /mnt/var/log
 
       mkdir /mnt/boot
       wait-for mount /dev/disk/by-label/boot /mnt/boot
