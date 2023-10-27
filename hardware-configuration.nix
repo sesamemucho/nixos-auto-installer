@@ -62,6 +62,7 @@
     device = "/dev/disk/by-label/nixos";
     fsType = "btrfs";
     options = [ "subvol=log" "compress=zstd" "noatime" ];
+    neededForBoot = true;
   };
 
   fileSystems."/persist" = {
