@@ -4,7 +4,14 @@
   imports = [
     ./hardware-configuration.nix
   ];
-  nixpkgs.config.allowUnfree = true;
+
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+      pulseaudio = true;
+    };
+  };
+
   networking.hostName = "gabriel";
   networking.wireless = {
     enable = true;
@@ -32,6 +39,45 @@
     LC_TIME = "en_US.UTF-8";
   };
 
+ sound.enable = true;
+
+  services = {
+    xserver = {
+      layout = "us";
+      xkbVariant = "";
+      enable = true;
+      windowManager.i3 = {
+        enable = true;
+        extraPackages = with pkgs; [
+          i3status
+        ];
+      };
+      desktopManager = {
+        xterm.enable = false;
+        xfce = {
+          enable = true;
+          noDesktop = true;
+          enableXfwm = false;
+        };
+      };
+      displayManager = {
+        lightdm.enable = true;
+        defaultSession = "xfce+i3";
+      };
+    };
+    gvfs.enable = true;
+    gnome.gnome-keyring.enable = true;
+    blueman.enable = true;
+    pipewire = {
+      enable = true;
+      alsa = {
+        enable = true;
+        support32Bit = true;
+      };
+      pulse.enable = true;
+    };
+  };
+
   services.avahi = {
     enable = true;
     ipv4 = true;
@@ -39,16 +85,51 @@
     nssmdns = true;
     publish = { enable = true; domain = true; addresses = true; };
   };
+
   environment.systemPackages = with pkgs; [
+    alacritty
     cryptsetup
+    dmenu
     emacs
     git
+    gnome.gnome-keyring
+#    nerdfonts
+    pulseaudioFull
     tmux
     vim
     wget
   ];
 
-  security.sudo.wheelNeedsPassword = false;
+
+  programs = {
+    thunar.enable = true;
+    dconf.enable = true;
+  };
+
+
+  security = {
+    polkit.enable = true;
+    rtkit.enable = true;
+    sudo.wheelNeedsPassword = true;
+  };
+
+  systemd = {
+    user.services.polkit-gnome-authentication-agent-1 = {
+      description = "polkit-gnome-authentication-agent-1";
+      wantedBy = [ "graphical-session.target" ];
+      wants = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+      serviceConfig = {
+        Type = "simple";
+        ExecStart =
+          "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+        Restart = "on-failure";
+        RestartSec = 1;
+        TimeoutStopSec = 10;
+      };
+    };
+  };
+
   services.openssh.enable = true;
   services.openssh.permitRootLogin = "yes";
   users.mutableUsers = false;
